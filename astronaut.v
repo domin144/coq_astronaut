@@ -22,11 +22,8 @@ Inductive bit :=
   | bit_0 : bit
   | bit_1 : bit.
 
-(* We want to efficiently encode the diary and we know the astronaut is a
-   grumbler, so he will record most of his days as bad days. *)
-
 (* To store the diary efficiently we will use variable length codes.
-   We know the astronaut is a pesymist, so he will record most of his days
+   We know the astronaut is a grumbler, so he will record most of his days
    as bad days. To take advantage of this let's use a single bit code for bad
    day and two bit codes for the others.
    Let's have some play with simple encoding / decoding functions. *)
@@ -37,6 +34,10 @@ Definition encode_single (l : day) : (list bit) :=
   | ordinary_day => [bit_1; bit_0]
   | good_day => [bit_1; bit_1]
   end.
+
+(* Not every sequence of bits can be decoded as single day record. This is why
+   the decoding function has to return optional. None is returned when the bits
+   could not be decoded as single day. *)
 
 Definition decode_single (lb : list bit) : option day :=
   match lb with
@@ -54,6 +55,9 @@ Example decode_single_ex0 :
   decode_single [bit_1; bit_0] = Some ordinary_day.
 Proof. reflexivity. Qed.
 
+(* Proof decode function should decode the same day as encode function received
+   as an argument is pretty simple. It enough to check all the cases. *)
+
 Theorem encode_decode_single_correct :
   forall (l : day),
     decode_single (encode_single l) = Some l.
@@ -64,6 +68,10 @@ Proof.
   - reflexivity.
   - reflexivity.
 Qed.
+
+(* Proof above was not really enlightening. Things get more interesting with
+   arbitrary number of days to encode. The set of possible inputs has just
+   become infinite. The functions are recusive now. *)
 
 Fixpoint encode_many (ll : list day) : list bit :=
   match ll with
@@ -170,6 +178,10 @@ Proof.
         apply cs_good.
     + apply IHll.
 Qed.
+
+(* Note the induction below is a little different. Instead of checking cases of
+   how list was constructed, we now check cases of how proposition was
+   estabilished. *)
 
 Theorem decode_correct :
   forall lb ll,
